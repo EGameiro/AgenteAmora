@@ -7,7 +7,7 @@ SCOPES = ["https://www.googleapis.com/auth/drive.readonly"]
 
 # URL pública para imagens compartilhadas no Google Drive
 # lh3.googleusercontent.com é URL direta, sem redirect — funciona melhor com UAZAPI
-_DRIVE_VIEW_URL = "https://lh3.googleusercontent.com/d/{file_id}"
+_DRIVE_VIEW_URL = "https://drive.google.com/uc?export=download&id={file_id}"
 _DRIVE_THUMB_URL = "https://drive.google.com/thumbnail?id={file_id}&sz=w800"
 
 
