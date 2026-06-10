@@ -143,13 +143,32 @@ def processar_mensagem(telefone: str, mensagem_usuario: str) -> tuple[str, list[
 
     fotos_para_enviar: list[str] = []
 
-    # Primeira mensagem: injeta contexto com os pratos do dia
+    # Primeira mensagem: injeta contexto e coleta fotos
     if sessao.estado == Estado.INICIO:
         pratos = sheets_service.get_pratos_do_dia()
         for p in pratos:
             url = media_service.get_foto_url(p["foto_id"])
             if url:
                 fotos_para_enviar.append(url)
+
+        # Injeta instrução explícita para o Claude se apresentar e listar o cardápio
+        pratos_texto = "\n".join(
+            f"- {p['nome_prato']}: PF R$ {p['preco_pf']:.2f} / Marmita R$ {p['preco_marmita']:.2f}"
+            for p in pratos
+        ) if pratos else "Nenhum prato cadastrado para hoje."
+
+        sessao.historico.insert(0, {
+            "role": "user",
+            "content": (
+                f"[SISTEMA] Esta é a primeira mensagem do cliente. "
+                f"Apresente-se como A Amora e informe os pratos de hoje:\n{pratos_texto}\n"
+                f"As fotos já foram enviadas automaticamente. Não mencione links ou fotos no texto."
+            ),
+        })
+        sessao.historico.insert(1, {
+            "role": "assistant",
+            "content": "Entendido! Vou me apresentar e mostrar os pratos do dia.",
+        })
         sessao.atualizar_estado(Estado.CARDAPIO)
 
     # Chama o Claude com o histórico completo
