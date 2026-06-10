@@ -141,7 +141,7 @@ def processar_mensagem(telefone: str, mensagem_usuario: str) -> tuple[str, list[
     sessao = session_service.get_ou_criar(telefone)
     sessao.adicionar_mensagem("user", mensagem_usuario)
 
-    fotos_para_enviar: list[str] = []
+    fotos_para_enviar: list[tuple[str, str]] = []  # (url, legenda)
 
     # Primeira mensagem: injeta contexto e coleta fotos
     if sessao.estado == Estado.INICIO:
@@ -149,7 +149,8 @@ def processar_mensagem(telefone: str, mensagem_usuario: str) -> tuple[str, list[
         for p in pratos:
             url = media_service.get_foto_url(p["foto_id"])
             if url:
-                fotos_para_enviar.append(url)
+                legenda = f"{p['nome_prato']}\nPF: R$ {p['preco_pf']:.2f} | Marmita: R$ {p['preco_marmita']:.2f}"
+                fotos_para_enviar.append((url, legenda))
 
         # Injeta instrução explícita para o Claude se apresentar e listar o cardápio
         pratos_texto = "\n".join(
