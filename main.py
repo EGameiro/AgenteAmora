@@ -2,9 +2,14 @@ import httpx
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 import asyncio
+import logging
+import traceback
 
 import config
 import agent
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Agente A Amora")
 
@@ -36,6 +41,7 @@ async def enviar_imagem_url(telefone: str, url_imagem: str, legenda: str = ""):
 @app.post("/webhook")
 async def webhook(request: Request):
     body = await request.json()
+    logger.info("WEBHOOK RECEBIDO: %s", body)
 
     # Ignora mensagens enviadas pelo próprio bot
     if body.get("fromMe"):
@@ -50,13 +56,20 @@ async def webhook(request: Request):
         or ""
     ).strip()
 
+    logger.info("telefone=%s | texto=%s", telefone, texto)
+
     if not telefone or not texto:
+        logger.info("Ignorado: telefone ou texto vazio")
         return JSONResponse({"status": "ignored"})
 
-    # Processa com o agente (síncrono em thread separada para não bloquear)
-    resposta, fotos = await asyncio.get_event_loop().run_in_executor(
-        None, agent.processar_mensagem, telefone, texto
-    )
+    try:
+        resposta, fotos = await asyncio.get_event_loop().run_in_executor(
+            None, agent.processar_mensagem, telefone, texto
+        )
+        logger.info("Resposta gerada: %s", resposta[:100] if resposta else "(vazia)")
+    except Exception:
+        logger.error("ERRO ao processar mensagem:\n%s", traceback.format_exc())
+        return JSONResponse({"status": "error"})
 
     # Envia fotos primeiro (pratos do dia na abertura)
     for url_foto in fotos:
