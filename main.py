@@ -92,7 +92,7 @@ async def webhook(request: Request):
         return JSONResponse({"status": "error"})
 
     for url_foto in fotos:
-        await enviar_imagem_url(telefone, "https://www.gstatic.com/webp/gallery/1.jpg")
+        await enviar_imagem_url(telefone, url_foto)
 
     if resposta:
         await enviar_texto(telefone, resposta)

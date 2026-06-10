@@ -5,27 +5,23 @@ from services.google_credentials import get_credentials
 
 SCOPES = ["https://www.googleapis.com/auth/drive.readonly"]
 
-# URL pública para imagens compartilhadas no Google Drive
-# lh3.googleusercontent.com é URL direta, sem redirect — funciona melhor com UAZAPI
-_DRIVE_VIEW_URL = "https://drive.google.com/uc?export=download&id={file_id}"
-_DRIVE_THUMB_URL = "https://drive.google.com/thumbnail?id={file_id}&sz=w800"
+# URL raw do GitHub para imagens hospedadas no repositório
+_GITHUB_RAW_URL = "https://raw.githubusercontent.com/EGameiro/AgenteAmora/master/fotos/{foto_id}"
 
 
 def get_foto_url(foto_id: str) -> Optional[str]:
     """
-    Recebe o ID do arquivo no Google Drive e retorna a URL direta da imagem.
-    O arquivo precisa estar compartilhado como 'Qualquer pessoa com o link pode ver'.
+    Recebe o nome do arquivo (ex: picanha.jpg) e retorna a URL raw do GitHub.
+    As imagens devem estar na pasta fotos/ do repositório.
     """
     if not foto_id:
         return None
-    return _DRIVE_VIEW_URL.format(file_id=foto_id)
+    return _GITHUB_RAW_URL.format(foto_id=foto_id)
 
 
 def get_foto_thumbnail_url(foto_id: str) -> Optional[str]:
-    """Retorna URL de thumbnail (800px) — útil para preview rápido."""
-    if not foto_id:
-        return None
-    return _DRIVE_THUMB_URL.format(file_id=foto_id)
+    """Alias para get_foto_url — GitHub raw já é URL direta."""
+    return get_foto_url(foto_id)
 
 
 def verificar_arquivo_existe(foto_id: str) -> bool:
