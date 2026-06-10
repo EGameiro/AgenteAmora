@@ -1,10 +1,10 @@
 import gspread
-from google.oauth2.service_account import Credentials
 from datetime import datetime
 from typing import Optional
 import time
 
 import config
+from services.google_credentials import get_credentials
 
 SCOPES = [
     "https://www.googleapis.com/auth/spreadsheets.readonly",
@@ -27,7 +27,7 @@ CACHE_TTL = 1800  # 30 minutos
 
 
 def _get_sheet():
-    creds = Credentials.from_service_account_file(config.GOOGLE_CREDENTIALS_FILE, scopes=SCOPES)
+    creds = get_credentials(SCOPES)
     client = gspread.authorize(creds)
     return client.open_by_key(config.GOOGLE_SHEET_ID).sheet1
 

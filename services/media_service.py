@@ -1,7 +1,7 @@
 from googleapiclient.discovery import build
-from google.oauth2.service_account import Credentials
 from typing import Optional
 import config
+from services.google_credentials import get_credentials
 
 SCOPES = ["https://www.googleapis.com/auth/drive.readonly"]
 
@@ -35,7 +35,7 @@ def verificar_arquivo_existe(foto_id: str) -> bool:
     if not foto_id:
         return False
     try:
-        creds = Credentials.from_service_account_file(config.GOOGLE_CREDENTIALS_FILE, scopes=SCOPES)
+        creds = get_credentials(SCOPES)
         service = build("drive", "v3", credentials=creds)
         service.files().get(fileId=foto_id, fields="id,name").execute()
         return True
