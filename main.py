@@ -8,7 +8,7 @@ import traceback
 import config
 import agent
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Agente A Amora")
@@ -26,8 +26,7 @@ async def enviar_texto(telefone: str, texto: str):
     numero = telefone.replace("@s.whatsapp.net", "").replace("@c.us", "").replace("+", "").strip()
     payload = {"number": numero, "text": texto}
     async with httpx.AsyncClient(timeout=30) as client:
-        resp = await client.post(url, json=payload, headers=HEADERS)
-        logger.info("enviar_texto status=%s body=%s", resp.status_code, resp.text[:200])
+        await client.post(url, json=payload, headers=HEADERS)
 
 
 async def enviar_imagem_url(telefone: str, url_imagem: str, legenda: str = ""):
@@ -44,14 +43,12 @@ async def enviar_imagem_url(telefone: str, url_imagem: str, legenda: str = ""):
 @app.post("/webhook")
 async def webhook(request: Request):
     body = await request.json()
-    logger.info("WEBHOOK RECEBIDO: %s", body)
 
     # Só processa eventos de mensagem
     event_type = body.get("EventType") or body.get("wook", "")
     if event_type not in ("messages", "RECEIVE_MESSAGE", ""):
         return JSONResponse({"status": "ignored", "event": event_type})
 
-    # Novo formato UAZAPI: dados dentro do objeto 'message'
     msg = body.get("message", {})
 
     # Ignora mensagens enviadas pelo próprio bot
@@ -62,7 +59,7 @@ async def webhook(request: Request):
     if msg.get("isGroup") or body.get("isGroupMsg"):
         return JSONResponse({"status": "ignored"})
 
-    # Extrai telefone — novo formato usa sender_pn, antigo usa phone/sender
+    # Extrai telefone
     sender_pn = msg.get("sender_pn", "")
     telefone = (
         sender_pn.replace("@s.whatsapp.net", "").replace("@c.us", "").strip()
@@ -70,7 +67,7 @@ async def webhook(request: Request):
         or body.get("phone", "")
     )
 
-    # Extrai texto — novo formato usa msg.text, antigo usa body direto
+    # Extrai texto
     texto = (
         msg.get("text")
         or msg.get("content")
@@ -80,26 +77,20 @@ async def webhook(request: Request):
         or ""
     ).strip()
 
-    logger.info("telefone=%s | texto=%s", telefone, texto)
-
     if not telefone or not texto:
-        logger.info("Ignorado: telefone ou texto vazio")
         return JSONResponse({"status": "ignored"})
 
     try:
         resposta, fotos = await asyncio.get_event_loop().run_in_executor(
             None, agent.processar_mensagem, telefone, texto
         )
-        logger.info("Resposta gerada: %s", resposta[:100] if resposta else "(vazia)")
     except Exception:
         logger.error("ERRO ao processar mensagem:\n%s", traceback.format_exc())
         return JSONResponse({"status": "error"})
 
-    # Envia fotos primeiro (pratos do dia na abertura)
     for url_foto in fotos:
         await enviar_imagem_url(telefone, url_foto)
 
-    # Envia resposta em texto
     if resposta:
         await enviar_texto(telefone, resposta)
 
