@@ -91,11 +91,11 @@ async def webhook(request: Request):
         logger.error("ERRO ao processar mensagem:\n%s", traceback.format_exc())
         return JSONResponse({"status": "error"})
 
-    for url_foto, legenda in fotos:
-        await enviar_imagem_url(telefone, url_foto, legenda)
-
     if resposta:
         await enviar_texto(telefone, resposta)
+
+    for url_foto, legenda in fotos:
+        await enviar_imagem_url(telefone, url_foto, legenda)
 
     return JSONResponse({"status": "ok"})
 
