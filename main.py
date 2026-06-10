@@ -8,7 +8,7 @@ import traceback
 import config
 import agent
 
-logging.basicConfig(level=logging.WARNING)
+logging.basicConfig(level=logging.WARNING, format="%(levelname)s:%(name)s:%(message)s")
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Agente A Amora")
@@ -34,7 +34,8 @@ async def enviar_imagem_url(telefone: str, url_imagem: str, legenda: str = ""):
     numero = telefone.replace("@s.whatsapp.net", "").replace("@c.us", "").replace("+", "").strip()
     payload = {"number": numero, "image": url_imagem, "caption": legenda}
     async with httpx.AsyncClient(timeout=30) as client:
-        await client.post(url, json=payload, headers=HEADERS)
+        resp = await client.post(url, json=payload, headers=HEADERS)
+        logger.warning("enviar_imagem status=%s body=%s", resp.status_code, resp.text[:300])
 
 
 # ---------------------------------------------------------------------------
