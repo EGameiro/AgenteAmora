@@ -134,7 +134,7 @@ def _executar_tool(name: str, inputs: dict, sessao: Sessao) -> str:
 # ---------------------------------------------------------------------------
 # Loop principal do agente
 # ---------------------------------------------------------------------------
-def processar_mensagem(telefone: str, mensagem_usuario: str) -> tuple[str, list[str]]:
+def processar_mensagem(telefone: str, mensagem_usuario: str, nome: str = "") -> tuple[str, list[str]]:
     """
     Processa uma mensagem do usuário e retorna (texto_resposta, lista_urls_fotos).
     """
@@ -158,11 +158,13 @@ def processar_mensagem(telefone: str, mensagem_usuario: str) -> tuple[str, list[
             for p in pratos
         ) if pratos else "Nenhum prato cadastrado para hoje."
 
+        saudacao_nome = f" {nome}" if nome else ""
         sessao.historico.insert(0, {
             "role": "user",
             "content": (
                 f"[SISTEMA] Esta é a primeira mensagem do cliente. "
-                f"Apresente-se como Amora e diga que os pratos de hoje já foram enviados como fotos acima. "
+                f"Apresente-se como Amora e chame o cliente pelo nome:{saudacao_nome}. "
+                f"Diga que os pratos de hoje já foram enviados como fotos. "
                 f"NÃO liste os pratos nem os preços no texto — as fotos com legenda já mostram isso. "
                 f"Apenas pergunte o que o cliente deseja pedir. "
                 f"Pratos disponíveis (use apenas para responder dúvidas): {pratos_texto}"

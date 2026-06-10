@@ -70,7 +70,8 @@ async def webhook(request: Request):
         or body.get("phone", "")
     )
 
-    # Extrai texto
+    # Extrai nome e texto
+    nome = msg.get("senderName") or body.get("chat", {}).get("wa_name", "")
     texto = (
         msg.get("text")
         or msg.get("content")
@@ -85,7 +86,7 @@ async def webhook(request: Request):
 
     try:
         resposta, fotos = await asyncio.get_event_loop().run_in_executor(
-            None, agent.processar_mensagem, telefone, texto
+            None, agent.processar_mensagem, telefone, texto, nome
         )
     except Exception:
         logger.error("ERRO ao processar mensagem:\n%s", traceback.format_exc())
