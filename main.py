@@ -30,9 +30,9 @@ async def enviar_texto(telefone: str, texto: str):
 
 
 async def enviar_imagem_url(telefone: str, url_imagem: str, legenda: str = ""):
-    url = f"{config.UAZAPI_BASE_URL}/sendFile"
+    url = f"{config.UAZAPI_BASE_URL}/send/image"
     numero = telefone.replace("@s.whatsapp.net", "").replace("@c.us", "").replace("+", "").strip()
-    payload = {"phone": numero, "url": url_imagem, "caption": legenda}
+    payload = {"number": numero, "image": url_imagem, "caption": legenda}
     async with httpx.AsyncClient(timeout=30) as client:
         await client.post(url, json=payload, headers=HEADERS)
 
