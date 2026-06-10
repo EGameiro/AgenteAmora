@@ -22,15 +22,18 @@ HEADERS = {
 }
 
 async def enviar_texto(telefone: str, texto: str):
-    url = f"{config.UAZAPI_BASE_URL}/message/sendText/{config.UAZAPI_INSTANCE}"
-    payload = {"phone": telefone, "message": texto}
+    url = f"{config.UAZAPI_BASE_URL}/send/text"
+    numero = telefone.replace("@s.whatsapp.net", "").replace("@c.us", "").replace("+", "").strip()
+    payload = {"number": numero, "text": texto}
     async with httpx.AsyncClient(timeout=30) as client:
-        await client.post(url, json=payload, headers=HEADERS)
+        resp = await client.post(url, json=payload, headers=HEADERS)
+        logger.info("enviar_texto status=%s body=%s", resp.status_code, resp.text[:200])
 
 
 async def enviar_imagem_url(telefone: str, url_imagem: str, legenda: str = ""):
-    url = f"{config.UAZAPI_BASE_URL}/message/sendImage/{config.UAZAPI_INSTANCE}"
-    payload = {"phone": telefone, "image": url_imagem, "caption": legenda}
+    url = f"{config.UAZAPI_BASE_URL}/sendFile"
+    numero = telefone.replace("@s.whatsapp.net", "").replace("@c.us", "").replace("+", "").strip()
+    payload = {"phone": numero, "url": url_imagem, "caption": legenda}
     async with httpx.AsyncClient(timeout=30) as client:
         await client.post(url, json=payload, headers=HEADERS)
 
@@ -43,16 +46,37 @@ async def webhook(request: Request):
     body = await request.json()
     logger.info("WEBHOOK RECEBIDO: %s", body)
 
+    # Só processa eventos de mensagem
+    event_type = body.get("EventType") or body.get("wook", "")
+    if event_type not in ("messages", "RECEIVE_MESSAGE", ""):
+        return JSONResponse({"status": "ignored", "event": event_type})
+
+    # Novo formato UAZAPI: dados dentro do objeto 'message'
+    msg = body.get("message", {})
+
     # Ignora mensagens enviadas pelo próprio bot
-    if body.get("fromMe"):
+    if msg.get("fromMe") or msg.get("wasSentByApi") or body.get("fromMe"):
         return JSONResponse({"status": "ignored"})
 
-    # Extrai telefone e texto
-    telefone = body.get("phone") or body.get("from", "")
+    # Ignora grupos
+    if msg.get("isGroup") or body.get("isGroupMsg"):
+        return JSONResponse({"status": "ignored"})
+
+    # Extrai telefone — novo formato usa sender_pn, antigo usa phone/sender
+    sender_pn = msg.get("sender_pn", "")
+    telefone = (
+        sender_pn.replace("@s.whatsapp.net", "").replace("@c.us", "").strip()
+        or body.get("sender", "")
+        or body.get("phone", "")
+    )
+
+    # Extrai texto — novo formato usa msg.text, antigo usa body direto
     texto = (
-        body.get("text")
+        msg.get("text")
+        or msg.get("content")
+        or body.get("text")
         or body.get("body")
-        or body.get("message", {}).get("conversation", "")
+        or body.get("content")
         or ""
     ).strip()
 
