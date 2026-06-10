@@ -162,8 +162,10 @@ def processar_mensagem(telefone: str, mensagem_usuario: str) -> tuple[str, list[
             "role": "user",
             "content": (
                 f"[SISTEMA] Esta é a primeira mensagem do cliente. "
-                f"Apresente-se como A Amora e informe os pratos de hoje:\n{pratos_texto}\n"
-                f"As fotos já foram enviadas automaticamente. Não mencione links ou fotos no texto."
+                f"Apresente-se como Amora e diga que os pratos de hoje já foram enviados como fotos acima. "
+                f"NÃO liste os pratos nem os preços no texto — as fotos com legenda já mostram isso. "
+                f"Apenas pergunte o que o cliente deseja pedir. "
+                f"Pratos disponíveis (use apenas para responder dúvidas): {pratos_texto}"
             ),
         })
         sessao.historico.insert(1, {
