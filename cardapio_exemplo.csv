@@ -1,0 +1,13 @@
+dia_semana,prato_numero,nome_prato,descricao,preco_pf,preco_marmita,foto_id
+Segunda,1,Frango Grelhado com Legumes,"Filé de frango grelhado temperado com ervas finas, acompanha arroz branco, feijão, salada de alface e tomate e farofa.",18.90,16.50,ID_FOTO_SEGUNDA_PRATO1
+Segunda,2,Carne Assada ao Molho,"Carne bovina assada lentamente ao molho de cebola e alho, acompanha arroz, feijão, macarrão e salada.",20.90,18.50,ID_FOTO_SEGUNDA_PRATO2
+Terça,1,Tilápia Frita,"Filé de tilápia empanado e frito, temperado com limão e alho, acompanha arroz, feijão, purê de batata e salada.",19.90,17.50,ID_FOTO_TERCA_PRATO1
+Terça,2,Frango à Parmegiana,"Frango empanado com molho de tomate caseiro e queijo derretido, acompanha arroz, feijão e batata frita.",21.90,19.50,ID_FOTO_TERCA_PRATO2
+Quarta,1,Picanha Suína Grelhada,"Picanha suína grelhada na chapa com tempero especial da casa, acompanha arroz, feijão, mandioca frita e vinagrete.",22.90,20.50,ID_FOTO_QUARTA_PRATO1
+Quarta,2,Macarrão à Bolonhesa,"Macarrão espaguete ao molho bolonhesa com carne moída temperada, acompanha arroz, salada e pão de alho.",18.90,16.50,ID_FOTO_QUARTA_PRATO2
+Quinta,1,Feijoada Completa,"Feijoada tradicional com carne seca, linguiça, paio e costelinha, acompanha arroz, couve refogada, farofa e laranja.",24.90,22.50,ID_FOTO_QUINTA_PRATO1
+Quinta,2,Filé de Frango ao Limão,"Filé de frango ao molho de limão siciliano com alcaparras, acompanha arroz integral, feijão e salada verde.",19.90,17.50,ID_FOTO_QUINTA_PRATO2
+Sexta,1,Bacalhau à Portuguesa,"Bacalhau desfiado com batatas, ovos cozidos, azeitonas e azeite extravirgem, acompanha arroz e salada.",26.90,24.50,ID_FOTO_SEXTA_PRATO1
+Sexta,2,Frango Xadrez,"Frango salteado com pimentões coloridos, milho e amendoim torrado ao molho shoyu, acompanha arroz branco.",20.90,18.50,ID_FOTO_SEXTA_PRATO2
+Sábado,1,Churrasco Misto,"Combinação de picanha, linguiça artesanal e frango grelhados na brasa, acompanha arroz, farofa e vinagrete.",29.90,27.50,ID_FOTO_SABADO_PRATO1
+Sábado,2,Moqueca de Peixe,"Moqueca tradicional baiana com filé de peixe branco, leite de coco, tomate, pimentão e coentro, acompanha arroz e pirão.",27.90,25.50,ID_FOTO_SABADO_PRATO2
