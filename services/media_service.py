@@ -1,7 +1,5 @@
-from googleapiclient.discovery import build
+from urllib.parse import quote
 from typing import Optional
-import config
-from services.google_credentials import get_credentials
 
 SCOPES = ["https://www.googleapis.com/auth/drive.readonly"]
 
@@ -16,7 +14,7 @@ def get_foto_url(foto_id: str) -> Optional[str]:
     """
     if not foto_id:
         return None
-    return _GITHUB_RAW_URL.format(foto_id=foto_id)
+    return _GITHUB_RAW_URL.format(foto_id=quote(foto_id))
 
 
 def get_foto_thumbnail_url(foto_id: str) -> Optional[str]:
