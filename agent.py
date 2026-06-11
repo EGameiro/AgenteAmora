@@ -34,12 +34,13 @@ TOOLS = [
     },
     {
         "name": "adicionar_item",
-        "description": "Adiciona um item ao carrinho do cliente.",
+        "description": "Adiciona um item ao carrinho do cliente, com ajustes/personalizações opcionais (ex: sem cebola, extra queijo).",
         "input_schema": {
             "type": "object",
             "properties": {
                 "nome_prato": {"type": "string"},
                 "tipo":       {"type": "string", "enum": ["pf", "marmita"], "description": "'pf' para Prato Feito, 'marmita' para Marmita"},
+                "ajustes":    {"type": "array", "items": {"type": "string"}, "description": "Lista de personalizações do prato, ex: ['sem cebola', 'extra queijo']"},
             },
             "required": ["nome_prato", "tipo"],
         },
@@ -108,13 +109,15 @@ def _executar_tool(name: str, inputs: dict, sessao: Sessao) -> str:
     if name == "adicionar_item":
         nome = inputs["nome_prato"]
         tipo = inputs["tipo"]
+        ajustes = inputs.get("ajustes") or []
         prato = sheets_service.get_prato_por_nome(nome)
         if not prato:
             return f"Prato '{nome}' não encontrado na planilha."
         preco = prato["preco_pf"] if tipo == "pf" else prato["preco_marmita"]
-        sessao.carrinho.adicionar(prato["nome_prato"], tipo, preco)
+        sessao.carrinho.adicionar(prato["nome_prato"], tipo, preco, ajustes)
         sessao.atualizar_estado(Estado.PEDINDO)
-        return f"✅ Adicionado: {prato['nome_prato']} ({'Prato Feito' if tipo == 'pf' else 'Marmita'}) — R$ {preco:.2f}"
+        ajustes_txt = f" ({', '.join(ajustes)})" if ajustes else ""
+        return f"✅ Adicionado: {prato['nome_prato']} ({'Prato Feito' if tipo == 'pf' else 'Marmita'}){ajustes_txt} — R$ {preco:.2f}"
 
     if name == "remover_item":
         sessao.carrinho.remover(inputs["nome_prato"], inputs["tipo"])
