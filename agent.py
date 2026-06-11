@@ -146,7 +146,7 @@ def processar_mensagem(telefone: str, mensagem_usuario: str, nome: str = "") -> 
 
     fotos_para_enviar: list[tuple[str, str]] = []  # (url, legenda)
 
-    # Primeira mensagem: injeta contexto e coleta fotos
+    # Primeira mensagem: saudação fixa + fotos, sem chamar o Claude
     if sessao.estado == Estado.INICIO:
         pratos = sheets_service.get_pratos_do_dia()
         for p in pratos:
@@ -155,31 +155,30 @@ def processar_mensagem(telefone: str, mensagem_usuario: str, nome: str = "") -> 
                 legenda = f"{p['nome_prato']}\nPF: R$ {p['preco_pf']:.2f} | Marmita: R$ {p['preco_marmita']:.2f}"
                 fotos_para_enviar.append((url, legenda))
 
-        # Injeta instrução explícita para o Claude se apresentar e listar o cardápio
+        nome_label = nome if nome else "você"
+        saudacao = (
+            f"Oi {nome_label}! Tudo bem? 😊\n\n"
+            f"Sou a Amora, assistente virtual do restaurante. "
+            f"Estou aqui para ajudar você com o seu pedido!\n\n"
+            f"Abaixo estão nossos pratos de hoje. Dê uma olhada e me diz o que você gostaria de pedir!"
+        )
+
+        # Registra no histórico para o Claude ter contexto nas próximas mensagens
         pratos_texto = "\n".join(
             f"- {p['nome_prato']}: PF R$ {p['preco_pf']:.2f} / Marmita R$ {p['preco_marmita']:.2f}"
             for p in pratos
         ) if pratos else "Nenhum prato cadastrado para hoje."
 
-        saudacao_nome = f" {nome}" if nome else ""
         sessao.historico.insert(0, {
             "role": "user",
-            "content": (
-                f"[SISTEMA] Esta é a primeira mensagem do cliente. "
-                f"Apresente-se como Amora e chame o cliente pelo nome:{saudacao_nome}. "
-                f"Diga que os pratos de hoje já foram enviados como fotos. "
-                f"NÃO liste os pratos nem os preços no texto — as fotos com legenda já mostram isso. "
-                f"Apenas pergunte o que o cliente deseja pedir. "
-                f"Pratos disponíveis (use apenas para responder dúvidas): {pratos_texto}"
-            ),
+            "content": f"[SISTEMA] Pratos disponíveis hoje: {pratos_texto}",
         })
-        sessao.historico.insert(1, {
-            "role": "assistant",
-            "content": "Entendido! Vou me apresentar e mostrar os pratos do dia.",
-        })
+        sessao.adicionar_mensagem("assistant", saudacao)
         sessao.atualizar_estado(Estado.CARDAPIO)
 
-    # Chama o Claude com o histórico completo
+        return saudacao, fotos_para_enviar
+
+    # Demais mensagens: processa com o Claude
     resposta_texto = _chamar_claude(sessao)
     sessao.adicionar_mensagem("assistant", resposta_texto)
 
