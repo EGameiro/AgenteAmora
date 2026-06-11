@@ -26,7 +26,8 @@ async def enviar_texto(telefone: str, texto: str):
     numero = telefone.replace("@s.whatsapp.net", "").replace("@c.us", "").replace("+", "").strip()
     payload = {"number": numero, "text": texto}
     async with httpx.AsyncClient(timeout=30) as client:
-        await client.post(url, json=payload, headers=HEADERS)
+        resp = await client.post(url, json=payload, headers=HEADERS)
+        logger.warning("enviar_texto status=%s body=%s", resp.status_code, resp.text[:200])
 
 
 async def enviar_imagem_url(telefone: str, url_imagem: str, legenda: str = ""):
@@ -92,6 +93,7 @@ async def webhook(request: Request):
         logger.error("ERRO ao processar mensagem:\n%s", traceback.format_exc())
         return JSONResponse({"status": "error"})
 
+    logger.warning("resposta_texto=%s", resposta[:100] if resposta else "(VAZIA)")
     if resposta:
         await enviar_texto(telefone, resposta)
 
